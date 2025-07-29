@@ -2,7 +2,7 @@
 
 ## Description:
 
-Adds a pair of buttons to the toolbar which let you switch between user-defined background colours.
+QGIS plugin that adds a pair of buttons to the toolbar allowing for easier switching between user-defined background canvas colours.
 Created using [Plugin Builder](https://plugins.qgis.org/plugins/pluginbuilder/).
 
 ## Usage:
