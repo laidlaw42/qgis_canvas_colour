@@ -1,4 +1,4 @@
-# Canvas Colour (QGIS plugin)
+# Canvas Colour for QGIS
 
 ## Description
 
