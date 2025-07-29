@@ -14,8 +14,7 @@ Created using [Plugin Builder](https://plugins.qgis.org/plugins/pluginbuilder/).
 5. Right-click either button to set the colour
 6. Left-click to set the background colour
 
-![qgis-bin_oT5xRACQ47](https://github.com/user-attachments/assets/ac3187a5-3aad-4db9-97a3-9dc444e019e6)
-
+![qgis-bin_oT5xRACQ47](https://github.com/user-attachments/assets/d5302985-6067-4a45-bc43-e155c492d760)
 
 ## Requirements:
 
