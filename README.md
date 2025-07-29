@@ -1,11 +1,12 @@
-# Canvas Colour
+# Canvas Colour (QGIS plugin)
 
-## Description:
+## Description
 
-QGIS plugin that adds a pair of buttons to the toolbar allowing for easier switching between user-defined background canvas colours.
+Adds a pair of buttons to the toolbar allowing for easier switching between user-defined background canvas colours.
 Created using [Plugin Builder](https://plugins.qgis.org/plugins/pluginbuilder/).
 
-## Usage:
+
+## Usage
 
 1. Download a zip of this repo
 2. In QGIS, go to Plugins > Manage and Install Plugins... > Install from zip
@@ -16,11 +17,6 @@ Created using [Plugin Builder](https://plugins.qgis.org/plugins/pluginbuilder/).
 
 ![qgis-bin_oT5xRACQ47](https://github.com/user-attachments/assets/d5302985-6067-4a45-bc43-e155c492d760)
 
-## Requirements:
 
+## Requirements
 - QGIS 3.x
-- PyQt5
-
-## License:
-
-- GNU General Public License version 2 or later
