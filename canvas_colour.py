@@ -95,6 +95,8 @@ class CanvasColour:
         canvas = self.iface.mapCanvas()
         canvas.setCanvasColor(color)
         canvas.refresh()
+        canvas.update()
+        canvas.repaint()
 
     def save_settings(self):
         QSettings().setValue("CanvasColour/primary_color", self.primary_color.name())
