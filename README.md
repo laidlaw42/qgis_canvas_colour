@@ -6,7 +6,7 @@ Adds a pair of buttons to the toolbar allowing for easier switching between user
 Created using [Plugin Builder](https://plugins.qgis.org/plugins/pluginbuilder/).
 
 
-## Usage
+## Setup & Usage
 
 1. Download a zip of this repo
 2. In QGIS, go to Plugins > Manage and Install Plugins... > Install from zip
