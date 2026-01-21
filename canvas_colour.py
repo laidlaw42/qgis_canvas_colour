@@ -1,6 +1,6 @@
 from qgis.PyQt.QtCore import QCoreApplication, QSettings, Qt
 from qgis.PyQt.QtGui import QIcon, QColor, QPixmap
-from qgis.PyQt.QtWidgets import QAction, QPushButton, QColorDialog
+from qgis.PyQt.QtWidgets import QAction, QPushButton, QColorDialog, QToolButton
 from qgis.utils import iface
 
 import os.path
@@ -36,9 +36,16 @@ class CanvasColour:
         return QCoreApplication.translate('CanvasColour', message)
 
     def add_color_button(self, label):
-        """Add a color button that handles left/right click."""
-        button = QPushButton()
+        button = QToolButton(self.toolbar)
         button.setObjectName(label)
+
+        # ---- THIS IS THE IMPORTANT BIT ----
+        button.setAutoRaise(True)
+        button.setCheckable(False)
+        button.setToolButtonStyle(Qt.ToolButtonIconOnly)
+        button.setIconSize(self.iface.iconSize())
+        # ----------------------------------
+
         button.setToolTip(f"{label.capitalize()} canvas color")
 
         if label == "primary":
@@ -49,10 +56,15 @@ class CanvasColour:
             self.update_button_icon(button, self.secondary_color)
 
         button.setContextMenuPolicy(Qt.CustomContextMenu)
-        button.customContextMenuRequested.connect(lambda pos, b=button: self.open_color_dialog(b))
-        button.clicked.connect(lambda _, b=button: self.set_active_color(b.objectName()))
+        button.customContextMenuRequested.connect(
+            lambda pos, b=button: self.open_color_dialog(b)
+        )
+        button.clicked.connect(
+            lambda _, b=button: self.set_active_color(b.objectName())
+        )
 
         self.toolbar.addWidget(button)
+
 
     def update_button_icon(self, button, color):
         """Update a button to show a color swatch icon."""
@@ -61,7 +73,8 @@ class CanvasColour:
         button.setToolTip(f"{button.objectName().capitalize()}: {color.name()}")
 
     def make_color_icon(self, color):
-        pixmap = QPixmap(40, 20)
+        size = self.iface.iconSize().width()
+        pixmap = QPixmap(size, size)
         pixmap.fill(color)
         return QIcon(pixmap)
 
