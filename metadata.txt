@@ -3,6 +3,7 @@
 [general]
 name=Canvas Colour
 qgisMinimumVersion=3.0
+qgisMaximumVersion=4.99
 description=Switch canvas colour with a pair of buttons.
 version=1.2
 author=laidlaw42
