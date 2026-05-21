@@ -15,7 +15,7 @@ tracker=https://github.com/laidlaw42/qgis_canvas_colour/issues
 repository=https://github.com/laidlaw42/qgis_canvas_colour
 
 hasProcessingProvider=no
-changelog=v1.2 introduces Qt6 and QGIS 4 compatability 
+changelog=v1.1 Initial commit, v1.2 introduces Qt6 and QGIS 4 compatability
 
 # Tags are comma separated with spaces allowed
 tags=python, canvas, canvascolour
