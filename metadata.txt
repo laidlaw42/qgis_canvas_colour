@@ -1,14 +1,10 @@
-# This file contains metadata for your plugin.
-
-# This file should be included when you package your plugin.
-
-# Mandatory items:
+# Mandatory metadata:
 
 [general]
 name=Canvas Colour
 qgisMinimumVersion=3.0
 description=Switch canvas colour with a pair of buttons.
-version=1.1
+version=1.2
 author=laidlaw42
 email=laidlaw@duck.com
 
@@ -16,16 +12,12 @@ about=Simple pair of buttons that enable quick switching of the map canvas colou
 
 tracker=https://github.com/laidlaw42/qgis_canvas_colour/issues
 repository=https://github.com/laidlaw42/qgis_canvas_colour
-# End of mandatory metadata
-
-# Recommended items:
 
 hasProcessingProvider=no
-# Uncomment the following line and add your changelog:
-# changelog=
+changelog=v1.2 introduces Qt6 and QGIS 4 compatability 
 
 # Tags are comma separated with spaces allowed
-tags=python
+tags=python, canvas, canvascolour
 
 homepage=https://github.com/laidlaw42/qgis_canvas_colour
 category=Plugins
