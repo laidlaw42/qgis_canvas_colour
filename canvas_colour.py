@@ -1,74 +1,68 @@
 from qgis.PyQt.QtCore import QCoreApplication, QSettings, Qt
 from qgis.PyQt.QtGui import QIcon, QColor, QPixmap
-from qgis.PyQt.QtWidgets import QPushButton, QColorDialog, QToolButton
+from qgis.PyQt.QtWidgets import QColorDialog, QToolButton
 from qgis.utils import iface
-from qgis.core import QgsProject
 
 import os.path
 
 # --- CROSS-VERSION ENUM COMPATIBILITY HANDLING ---
-# PyQt6 (QGIS 4) introduces rigid namespace scoping for Enums, 
-# while PyQt5 (QGIS 3) expects flat, direct calls.
 try:
     TOOL_BUTTON_STYLE = Qt.ToolButtonStyle.ToolButtonIconOnly
     CONTEXT_MENU_POLICY = Qt.ContextMenuPolicy.CustomContextMenu
 except AttributeError:
     # Fallback to the Qt5 legacy structure
     TOOL_BUTTON_STYLE = Qt.ToolButtonIconOnly
-    CONTEXT_MENU_POLICY = Qt.CustomContextMenu
+    CONTEXT_MENU_POLICY = Qt.ContextMenuPolicy.CustomContextMenu
 
 
 class CanvasColour:
-    """QGIS Plugin Implementation working on both QGIS 3 and QGIS 4."""
+    """QGIS Plugin Implementation working seamlessly on both QGIS 3 and QGIS 4."""
 
     def __init__(self, iface):
         self.iface = iface
         self.plugin_dir = os.path.dirname(__file__)
-        self.actions = []
-        self.menu = self.tr('&CanvasColour')
+        self.toolbar = None
+        self.buttons = {}  # Store button references structurally
 
-        # Load settings or defaults
+        # Load global user settings or fall back to defaults
         saved_primary = QSettings().value("CanvasColour/primary_color", "#212830")
         saved_secondary = QSettings().value("CanvasColour/secondary_color", "#ffffff")
         self.primary_color = QColor(saved_primary)
         self.secondary_color = QColor(saved_secondary)
 
-        # Load last-used color
+        # Load last-used color selection
         self.current_color_name = QSettings().value("CanvasColour/last_used", "primary")
-        self.toolbar = None
 
     def tr(self, message):
         return QCoreApplication.translate('CanvasColour', message)
 
     def initGui(self):
+        """Create toolbar and populate with dynamic theme switch buttons."""
         self.toolbar = self.iface.addToolBar('CanvasColour')
         self.toolbar.setObjectName('CanvasColour')
 
-        self.add_color_button("primary")
-        self.add_color_button("secondary")
+        # Dynamically build UI elements without repetitive code blocks
+        for role in ["primary", "secondary"]:
+            self.add_color_button(role)
 
-        self.set_canvas_color()
+        # Set the initial visual state of the canvas without modifying project data
+        self.apply_canvas_visuals()
 
-    def add_color_button(self, label):
+    def add_color_button(self, role):
+        """Build and register a single color color swatch tool button."""
         button = QToolButton(self.toolbar)
-        button.setObjectName(label)
-
+        button.setObjectName(role)
         button.setAutoRaise(True)
         button.setCheckable(False)
-        button.setToolButtonStyle(TOOL_BUTTON_STYLE) # Version-safe styling
+        button.setToolButtonStyle(TOOL_BUTTON_STYLE)
         button.setIconSize(self.iface.iconSize())
 
-        button.setToolTip(f"{label.capitalize()} canvas color")
+        # Determine structural colors to apply to icons
+        color = self.primary_color if role == "primary" else self.secondary_color
+        self.update_button_icon(button, color)
 
-        if label == "primary":
-            self.primary_button = button
-            self.update_button_icon(button, self.primary_color)
-        else:
-            self.secondary_button = button
-            self.update_button_icon(button, self.secondary_color)
-
-        button.setContextMenuPolicy(CONTEXT_MENU_POLICY) # Version-safe policy
-        
+        # Connect action slots elegantly via single-expression lambda mappings
+        button.setContextMenuPolicy(CONTEXT_MENU_POLICY)
         button.customContextMenuRequested.connect(
             lambda pos, b=button: self.open_color_dialog(b)
         )
@@ -77,67 +71,72 @@ class CanvasColour:
         )
 
         self.toolbar.addWidget(button)
+        self.buttons[role] = button  # Save a reference to prevent garbage collection
 
     def update_button_icon(self, button, color):
-        """Update a button to show a color swatch icon."""
-        icon = self.make_color_icon(color)
-        button.setIcon(icon)
-        button.setToolTip(f"{button.objectName().capitalize()}: {color.name()}")
-
-    def make_color_icon(self, color):
+        """Refresh button look with color swatch icon and a responsive tooltip."""
         size = self.iface.iconSize().width()
         pixmap = QPixmap(size, size)
         pixmap.fill(color)
-        return QIcon(pixmap)
+        
+        button.setIcon(QIcon(pixmap))
+        button.setToolTip(f"{button.objectName().capitalize()} canvas color: {color.name()}")
 
     def open_color_dialog(self, button):
-        """Handle right-click — open color picker and update button."""
-        name = button.objectName()
-        current = self.primary_color if name == "primary" else self.secondary_color
-        selected = QColorDialog.getColor(current, self.iface.mainWindow(), f"Select {name.capitalize()} Color")
+        """Handle right-click event to reconfigure a color preference slot."""
+        role = button.objectName()
+        current_color = self.primary_color if role == "primary" else self.secondary_color
+        
+        selected = QColorDialog.getColor(
+            current_color, 
+            self.iface.mainWindow(), 
+            f"Select {role.capitalize()} Color"
+        )
 
         if selected.isValid():
-            if name == "primary":
+            if role == "primary":
                 self.primary_color = selected
-                self.update_button_icon(button, self.primary_color)
             else:
                 self.secondary_color = selected
-                self.update_button_icon(button, self.secondary_color)
 
+            self.update_button_icon(button, selected)
             self.save_settings()
-            if name == self.current_color_name:
-                self.set_canvas_color()
 
-    def set_active_color(self, name):
-        """Handle left-click — set canvas background to selected button’s color."""
-        self.current_color_name = name
-        self.set_canvas_color()
+            # Live reload canvas color immediately if updating the currently checked color
+            if role == self.current_color_name:
+                self.apply_canvas_visuals()
+
+    def set_active_color(self, role):
+        """Handle left-click event to swap global map viewport colors."""
+        self.current_color_name = role
+        self.apply_canvas_visuals()
         self.save_settings()
 
-    def set_canvas_color(self):
-        """Apply current active color to map canvas."""
+    def apply_canvas_visuals(self):
+        """Safely push visual update to Map Canvas without dirtying QgsProject data."""
         color = self.primary_color if self.current_color_name == "primary" else self.secondary_color
         canvas = self.iface.mapCanvas()
         
+        # Apply change purely to current environment instance
         canvas.setCanvasColor(color)
         canvas.refresh()
         canvas.update()
-        
-        # This API has been highly stable and identical across both versions!
-        project = QgsProject.instance()
-        project.writeEntry("Gui", "/CanvasColorRedPart", color.red())
-        project.writeEntry("Gui", "/CanvasColorGreenPart", color.green())
-        project.writeEntry("Gui", "/CanvasColorBluePart", color.blue())
 
     def save_settings(self):
-        QSettings().setValue("CanvasColour/primary_color", self.primary_color.name())
-        QSettings().setValue("CanvasColour/secondary_color", self.secondary_color.name())
-        QSettings().setValue("CanvasColour/last_used", self.current_color_name)
+        """Persist settings globally to user configuration registry."""
+        settings = QSettings()
+        settings.setValue("CanvasColour/primary_color", self.primary_color.name())
+        settings.setValue("CanvasColour/secondary_color", self.secondary_color.name())
+        settings.setValue("CanvasColour/last_used", self.current_color_name)
 
     def unload(self):
+        """Cleanly remove GUI components during plugin teardown operations."""
         if self.toolbar:
+            self.toolbar.clear()  # Removes hosted widgets safely
             self.iface.mainWindow().removeToolBar(self.toolbar)
-            del self.toolbar
+            self.toolbar.deleteLater()
+            self.toolbar = None
+            self.buttons.clear()
 
     def run(self):
         pass
