@@ -1,5 +1,9 @@
 # Canvas Colour for QGIS
 
+## Description
+
+Adds a pair of buttons to the toolbar allowing for easier switching between user-defined background canvas colours. 
+
 ## Setup & Usage
 
 1. Download a zip of this repo
